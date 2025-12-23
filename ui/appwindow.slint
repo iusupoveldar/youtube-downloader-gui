@@ -56,10 +56,6 @@ component AeroButton inherits Rectangle {
         color: root.enabled ? #ffffff : #f0f0f0;
         font-weight: 700;
         font-size: 14px;
-        drop-shadow-offset-x: 0px;
-        drop-shadow-offset-y: 1px;
-        drop-shadow-blur: 2px;
-        drop-shadow-color: #00000040;
         vertical-alignment: center;
         horizontal-alignment: center;
     }
@@ -105,11 +101,6 @@ export component AppWindow inherits Window {
                 font-size: 26px;
                 font-weight: 800;
                 color: AeroPalette.text-primary;
-                // Text glow/shadow for "embedded" look
-                drop-shadow-offset-x: 0px;
-                drop-shadow-offset-y: 1px;
-                drop-shadow-blur: 1px;
-                drop-shadow-color: #ffffff;
             }
         }
 
@@ -140,7 +131,7 @@ export component AppWindow inherits Window {
                 // URL Input
                 VerticalBox {
                     spacing: 5px;
-                    Text { text: "Video URL:"; color: AeroPalette.text-secondary; font-size: 13px; margin-left: 2px;}
+                    Text { text: "Video URL:"; color: AeroPalette.text-secondary; font-size: 13px; }
                     url_input := LineEdit {
                         placeholder-text: "Paste YouTube link here...";
                         font-size: 14px;
@@ -154,7 +145,7 @@ export component AppWindow inherits Window {
                     
                     VerticalBox {
                         spacing: 5px;
-                        Text { text: "Format:"; color: AeroPalette.text-secondary; font-size: 13px; margin-left: 2px; }
+                        Text { text: "Format:"; color: AeroPalette.text-secondary; font-size: 13px; }
                         format_combo := ComboBox {
                             model: ["Video (MP4)", "Audio (MP3)"];
                             current-value: "Video (MP4)";
@@ -164,7 +155,7 @@ export component AppWindow inherits Window {
                     
                     VerticalBox {
                         spacing: 5px;
-                        Text { text: "Quality:"; color: AeroPalette.text-secondary; font-size: 13px; margin-left: 2px; }
+                        Text { text: "Quality:"; color: AeroPalette.text-secondary; font-size: 13px; }
                         quality_combo := ComboBox {
                             model: ["Best", "1080p", "720p", "480p", "Audio Only"];
                             current-value: "Best";
@@ -223,7 +214,7 @@ export component AppWindow inherits Window {
         // Log Area
         VerticalBox {
             spacing: 5px;
-            Text { text: "Activity Log:"; color: AeroPalette.text-secondary; font-size: 12px; margin-left: 2px; }
+            Text { text: "Activity Log:"; color: AeroPalette.text-secondary; font-size: 12px; }
             Rectangle {
                 background: #ffffff;
                 border-radius: 6px;
@@ -234,8 +225,6 @@ export component AppWindow inherits Window {
                 TextEdit {
                     text: root.full_log;
                     font-size: 11px;
-                    font-family: "Consolas", "Courier New", monospace;
-                    color: #455a64;
                     read-only: true;
                     wrap: word-wrap;
                 }

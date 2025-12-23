@@ -6,7 +6,7 @@ use std::thread;
 
 use std::sync::Arc;
 
-pub fn start_download<F>(url: String, format: String, quality: String, on_output: F) -> Result<()> 
+pub fn start_download<F>(url: String, format: String, quality: String, download_path: String, on_output: F) -> Result<()> 
 where
     F: Fn(String) + Send + Sync + 'static,
 {
@@ -21,7 +21,6 @@ where
     let mut args = vec![];
 
     // Format selection logic
-    // Simplified for now
     match format.as_str() {
         "Audio (MP3)" => {
             args.push("-x".to_string());
@@ -47,17 +46,22 @@ where
     args.push("--ffmpeg-location".to_string());
     args.push(bin_path.to_string_lossy().to_string());
     
-    // Output template
+    // Download Path (Use -P for paths in yt-dlp)
+    args.push("-P".to_string());
+    args.push(download_path);
+
+    // Output template (filename only, path handled by -P)
     args.push("-o".to_string());
-    args.push("downloads/%(title)s.%(ext)s".to_string());
+    args.push("%(title)s.%(ext)s".to_string());
 
     args.push(url);
 
     // Spawn process
+    // Use creation_flags to hide window on Windows if desired, but for now standard spawn
     let mut child = Command::new(yt_dlp_path)
         .args(&args)
         .stdout(Stdio::piped())
-        .stderr(Stdio::piped()) // Capture stderr too as yt-dlp often prints progress there
+        .stderr(Stdio::piped()) 
         .spawn()
         .context("Failed to start download process")?;
 
@@ -68,7 +72,7 @@ where
     let on_output_stdout = on_output.clone();
     let on_output_stderr = on_output.clone();
 
-    // Stream output (simple blocking thread for now, can be improved)
+    // Stream output 
     thread::spawn(move || {
         let reader = BufReader::new(stdout);
         for line in reader.lines() {
@@ -78,19 +82,15 @@ where
         }
     });
 
-    // Also read stderr for progress
+    // Also read stderr 
     thread::spawn(move || {
         let reader = BufReader::new(stderr);
         for line in reader.lines() {
              if let Ok(l) = line {
-                // simple progress filter, or just pipe everything
                 on_output_stderr(l);
             }
         }
     });
 
-    // We don't wait for child here in the main thread to avoid blocking UI
-    // In a real app we'd want to manage the child process better (wait in thread and report finish)
-    
     Ok(())
 }
