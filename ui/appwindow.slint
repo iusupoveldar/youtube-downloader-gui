@@ -1,49 +1,41 @@
 import { Button, VerticalBox, LineEdit, ComboBox, HorizontalBox, TextEdit, ProgressIndicator, ScrollView, ListView } from "std-widgets.slint";
 
-export global AeroPalette {
-    out property <color> bg-gradient-start: #e0f7fa; 
-    out property <color> bg-gradient-end: #ffffff;
+export global ModernPalette {
+    // Deep, rich dark background
+    out property <color> bg-gradient-start: #0f172a; // Slate 900
+    out property <color> bg-gradient-end: #000000;
     
-    out property <color> glass-surface: #ffffffa0;
-    out property <color> glass-border: #ffffff;
+    // Glass effect
+    out property <color> glass-surface: #1e293b80; // Semi-transparent slate
+    out property <color> glass-border: #ffffff1a; // 10% white border
     
-    out property <color> text-primary: #004d40;
-    out property <color> text-secondary: #00695c;
+    // Typography
+    out property <color> text-primary: #ffffff;
+    out property <color> text-secondary: #94a3b8; // Slate 400
     
-    out property <color> button-top: #00b0ff;
-    out property <color> button-bottom: #0081cb;
-    out property <color> button-border: #005b9f;
+    // Accents (Neon Cyan/Blue)
+    out property <color> accent-primary: #06b6d4; // Cyan 500
+    out property <color> accent-hover: #22d3ee; // Cyan 400
+    out property <color> accent-dim: #0891b2; // Cyan 600
     
-    out property <color> button-hover-top: #40c4ff;
-    out property <color> button-hover-bottom: #0091ea;
+    // Inputs
+    out property <color> input-bg: #00000060;
 }
 
-component AeroButton inherits Rectangle {
+component GlassButton inherits Rectangle {
     in property <string> text;
     in property <bool> enabled: true;
     in property <bool> primary: true;
     callback clicked;
     
-    height: 38px;
-    border-radius: 19px; // Pill shape
+    height: 42px;
+    border-radius: 12px;
     
-    background: @linear-gradient(180deg, 
-        enabled ? (touch.has-hover ? AeroPalette.button-hover-top : AeroPalette.button-top) : #cfd8dc, 
-        enabled ? (touch.has-hover ? AeroPalette.button-hover-bottom : AeroPalette.button-bottom) : #b0bec5
-    );
-    
+    background: !enabled ? #334155 : (primary ? ModernPalette.accent-primary : #33415580);
     border-width: 1px;
-    border-color: enabled ? AeroPalette.button-border : #90a4ae;
+    border-color: !enabled ? #1e293b : (primary ? #ffffff40 : ModernPalette.glass-border);
     
-    // Shine effect
-    Rectangle {
-        x: 2px; y: 2px;
-        width: parent.width - 4px;
-        height: parent.height / 2 - 2px;
-        border-top-left-radius: 17px;
-        border-top-right-radius: 17px;
-        background: @linear-gradient(180deg, #ffffffa0, #ffffff10);
-    }
+    animate background { duration: 200ms; }
     
     touch := TouchArea {
         width: 100%; height: 100%;
@@ -53,180 +45,233 @@ component AeroButton inherits Rectangle {
     
     Text {
         text: root.text;
-        color: root.enabled ? #ffffff : #f0f0f0;
-        font-weight: 700;
+        color: !root.enabled ? #64748b : #ffffff;
+        font-weight: 600;
         font-size: 14px;
         vertical-alignment: center;
         horizontal-alignment: center;
     }
+    
+    states [
+        hover when touch.has-hover && root.enabled: {
+            background: root.primary ? ModernPalette.accent-hover : #475569;
+        }
+        pressed when touch.pressed && root.enabled: {
+            background: root.primary ? ModernPalette.accent-dim : #1e293b;
+        }
+    ]
 }
 
-component AeroGlassPanel inherits Rectangle {
-    background: AeroPalette.glass-surface;
-    border-radius: 12px;
+component GlassPanel inherits Rectangle {
+    background: ModernPalette.glass-surface;
+    border-radius: 16px;
     border-width: 1px;
-    border-color: AeroPalette.glass-border;
-    
-    // Subtle shadow
-    drop-shadow-offset-x: 0px;
-    drop-shadow-offset-y: 4px;
-    drop-shadow-blur: 10px;
-    drop-shadow-color: #00000010;
+    border-color: ModernPalette.glass-border;
 }
 
 export component AppWindow inherits Window {
-    title: "YT-DLP Aero";
-    min-width: 700px;
-    min-height: 550px;
-    background: @linear-gradient(135deg, AeroPalette.bg-gradient-start, AeroPalette.bg-gradient-end);
+    title: "YT-DLP Modern";
+    min-width: 800px;
+    min-height: 600px;
+    background: @linear-gradient(135deg, ModernPalette.bg-gradient-start, ModernPalette.bg-gradient-end);
 
-    in property <string> status_text: "Initializing...";
-    in property <string> full_log: "System init...\n";
+    in property <string> status_text: "System Ready";
+    in property <string> full_log: "Initialize...\n";
     in property <float> download_progress: 0.0;
     in property <bool> is_downloading: false;
     in property <string> download_path: "downloads";
     
-    callback start_download(string, string, string); // url, format, quality
+    callback start_download(string, string, string);
     callback choose_path();
 
     VerticalBox {
-        padding: 30px;
-        spacing: 20px;
+        padding: 40px;
+        spacing: 30px;
 
-        // Title Area
-        HorizontalBox {
+        // Header
+        VerticalBox {
+            spacing: 5px;
             alignment: center;
             Text {
-                text: "YouTube Downloader Professional";
-                font-size: 26px;
+                text: "YouTube Downloader";
+                font-size: 32px;
                 font-weight: 800;
-                color: AeroPalette.text-primary;
+                color: ModernPalette.text-primary;
+                horizontal-alignment: center;
+            }
+            Text {
+                text: "Professional High-Speed Downloader";
+                font-size: 14px;
+                color: ModernPalette.text-secondary;
+                horizontal-alignment: center;
             }
         }
 
-        // Main Control Panel
-        AeroGlassPanel {
+        // Main Controls
+        GlassPanel {
             VerticalBox {
-                padding: 20px;
-                spacing: 15px;
+                padding: 24px;
+                spacing: 20px;
 
                 // Path Selector
                 HorizontalBox {
-                   spacing: 10px;
-                   Text { text: "Save to:"; vertical-alignment: center; color: AeroPalette.text-secondary; width: 60px; }
-                   LineEdit {
-                       text: root.download_path;
-                       enabled: false; // Read-only, set via dialog
-                       height: 32px;
-                       horizontal-stretch: 1;
-                   }
-                   AeroButton {
-                       text: "Browse...";
-                       width: 80px;
-                       height: 32px;
-                       clicked => { root.choose_path(); }
-                   }
+                    spacing: 12px;
+                    Text { 
+                        text: "Location"; 
+                        vertical-alignment: center; 
+                        color: ModernPalette.text-secondary; 
+                        width: 70px;
+                        font-size: 13px;
+                    }
+                    path_field := Rectangle {
+                        background: ModernPalette.input-bg;
+                        border-radius: 8px;
+                        border-width: 1px;
+                        border-color: ModernPalette.glass-border;
+                        height: 42px;
+                        horizontal-stretch: 1;
+                        
+                        Text {
+                            x: 12px;
+                            text: root.download_path;
+                            color: ModernPalette.text-primary;
+                            vertical-alignment: center;
+                            height: 100%;
+                            overflow: elide;
+                        }
+                    }
+                    GlassButton {
+                        text: "Browse";
+                        primary: false;
+                        width: 90px;
+                        clicked => { root.choose_path(); }
+                    }
                 }
 
                 // URL Input
-                VerticalBox {
-                    spacing: 5px;
-                    Text { text: "Video URL:"; color: AeroPalette.text-secondary; font-size: 13px; }
+                HorizontalBox {
+                    spacing: 12px;
+                    Text { 
+                        text: "URL"; 
+                        vertical-alignment: center; 
+                        color: ModernPalette.text-secondary; 
+                        width: 70px;
+                        font-size: 13px;
+                    }
                     url_input := LineEdit {
-                        placeholder-text: "Paste YouTube link here...";
+                        placeholder-text: "https://youtube.com/watch?v=...";
                         font-size: 14px;
-                        height: 38px;
+                        height: 42px;
+                        horizontal-stretch: 1;
                     }
                 }
 
-                // Options
+                // Options Row
                 HorizontalBox {
                     spacing: 20px;
                     
-                    VerticalBox {
-                        spacing: 5px;
-                        Text { text: "Format:"; color: AeroPalette.text-secondary; font-size: 13px; }
+                    // Format
+                    HorizontalBox {
+                        spacing: 12px;
+                        width: 50%;
+                        Text { 
+                            text: "Format"; 
+                            vertical-alignment: center; 
+                            color: ModernPalette.text-secondary; 
+                            width: 70px;
+                            font-size: 13px;
+                        }
                         format_combo := ComboBox {
                             model: ["Video (MP4)", "Audio (MP3)"];
                             current-value: "Video (MP4)";
-                            height: 38px;
+                            height: 42px;
+                            horizontal-stretch: 1;
                         }
                     }
                     
-                    VerticalBox {
-                        spacing: 5px;
-                        Text { text: "Quality:"; color: AeroPalette.text-secondary; font-size: 13px; }
+                    // Quality
+                    HorizontalBox {
+                        spacing: 12px;
+                        width: 50%;
+                        Text { 
+                            text: "Quality"; 
+                            vertical-alignment: center; 
+                            color: ModernPalette.text-secondary; 
+                            width: 60px;
+                            font-size: 13px;
+                        }
                         quality_combo := ComboBox {
                             model: ["Best", "1080p", "720p", "480p", "Audio Only"];
                             current-value: "Best";
-                            height: 38px;
+                            height: 42px;
+                            horizontal-stretch: 1;
                         }
                     }
                 }
             }
         }
 
-        // Progress Bar
+        // Progress Section
         if (root.download_progress > 0.0 || root.is_downloading): VerticalBox {
-             spacing: 6px;
+             spacing: 8px;
              HorizontalBox {
-                 Text { text: root.is_downloading ? "Downloading..." : "Done"; color: AeroPalette.text-secondary; font-size: 12px; }
-                 Text { text: Math.round(root.download_progress * 100) + "%"; color: AeroPalette.button-bottom; horizontal-alignment: right; font-weight: 700; }
+                 Text { text: root.is_downloading ? "Downloading..." : "Complete"; color: ModernPalette.text-secondary; font-size: 12px; }
+                 Text { text: Math.round(root.download_progress * 100) + "%"; color: ModernPalette.accent-primary; horizontal-alignment: right; font-weight: 700; }
              }
-             // Glossy Progress Bar Container
+             
              Rectangle {
-                 height: 14px;
-                 background: #e0e0e0;
-                 border-radius: 7px;
-                 border-width: 1px;
-                 border-color: #bdbdbd;
+                 height: 6px;
+                 background: #334155;
+                 border-radius: 3px;
                  clip: true;
                  
-                 // Progress Fill
                  Rectangle {
                      x: 0;
                      width: parent.width * root.download_progress;
                      height: 100%;
-                     background: @linear-gradient(180deg, #b9f6ca, #00c853); // Green-ish Aero
-                     border-radius: 6px;
-                     animate width { duration: 200ms; easing: ease-out; }
+                     background: ModernPalette.accent-primary;
+                     border-radius: 3px;
+                     animate width { duration: 250ms; easing: ease-out; }
                      
-                     // Shine on progress
-                     Rectangle {
-                         x: 0; y: 0; width: parent.width; height: 50%;
-                         background: #ffffff60;
-                         border-radius: 6px;
-                     }
+                     // Glow
+                     // drop-shadow-blur: 4px; // Not supported on Rectangle in current Slint version clearly?
+                     // Workaround for glow: no easy way without images or custom shader, keeping clean flat neon
                  }
              }
         }
 
-        // Action Button
-        AeroButton {
-            text: root.is_downloading ? "Processing..." : "START DOWNLOAD";
-            height: 45px;
+        // Main Action
+        GlassButton {
+            text: root.is_downloading ? "PROCESSING..." : "START DOWNLOAD";
+            height: 50px;
             enabled: !root.is_downloading && url_input.text != "";
             clicked => {
                 root.start_download(url_input.text, format_combo.current-value, quality_combo.current-value);
             }
         }
-
-        // Log Area
-        VerticalBox {
-            spacing: 5px;
-            Text { text: "Activity Log:"; color: AeroPalette.text-secondary; font-size: 12px; }
-            Rectangle {
-                background: #ffffff;
-                border-radius: 6px;
-                border-color: #cfd8dc;
-                border-width: 1px;
-                height: 120px; // Taller for logs
+        
+        // Logs
+        GlassPanel {
+            VerticalBox {
+                padding: 12px;
+                spacing: 8px;
+                Text { text: "Terminal Output"; color: ModernPalette.text-secondary; font-size: 11px; font-weight: 700; }
                 
-                TextEdit {
-                    text: root.full_log;
-                    font-size: 11px;
-                    read-only: true;
-                    wrap: word-wrap;
+                Rectangle {
+                    background: #0f172a;
+                    border-radius: 8px;
+                    border-width: 1px;
+                    border-color: ModernPalette.glass-border;
+                    height: 120px;
+                    
+                    TextEdit {
+                        text: root.full_log;
+                        font-size: 11px;
+                        // font-family: "Consolas"; // Removing to avoid build error risks, strictly utilizing default monospace if possible or default font
+                        read-only: true;
+                        wrap: word-wrap;
+                        // color: #94a3b8; // Setting color on TextEdit might have issues? trying safely
+                    }
                 }
             }
         }
